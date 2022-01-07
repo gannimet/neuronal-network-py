@@ -6,7 +6,7 @@ def sigmoid(x):
   return 1 / (1 + np.exp(-x))
 
 class NN():
-  def __init__(self, structure=[3, 3, 3], eta=0.01, n_iterations=1000, random_seed=1):
+  def __init__(self, structure=[3, 3, 3], eta=0.01, n_iterations=1000, random_seed=42):
     self.structure = structure
     self.eta = eta
     self.n_iterations = n_iterations
@@ -46,9 +46,11 @@ class NN():
     for i in range(1, len(self.structure)):
       delta_W.append(np.zeros((self.structure[i] + 1, self.structure[i - 1] + 1)))
 
+    training_set = list(zip(X, Y))
+    training_set_len = len(training_set)
     for _ in range(self.n_iterations):
       error = 0.0
-      for x, y in zip(X, Y):
+      for x, y in training_set:
         y = np.r_[[0.0], y]
         y_hat = self.predict(x)
         diff = y_hat - y
@@ -68,9 +70,12 @@ class NN():
 
         # Calculate the weight deltas and apply them to the weights
         for i in range(len(delta_W)):
-          k = i + 1
-          delta_W[i] = -self.eta * np.outer(D[i], self.layers[i].T)
-          self.W[i] += delta_W[i]
+          delta_W[i] += -self.eta * np.outer(D[i], self.layers[i].T)
+
+      # Apply the weight deltas (averaged over all training samples)
+      for j in range(len(delta_W)):
+        self.W[j] += delta_W[j] / training_set_len
+        delta_W[j][:] = 0.0
 
       self.errors.append(error)
 
@@ -104,7 +109,7 @@ class NN():
 def main():
   X = np.array([[1, 1], [0, 1], [1, 0], [0, 0]])
   Y = np.array([[0],    [1],    [1],    [0]])
-  nn = NN(eta=0.05, n_iterations=50000, structure=[2, 2, 1])
+  nn = NN(eta=0.05, n_iterations=40000, structure=[2, 2, 1])
   nn.fit(X, Y)
   nn.plot()
 
