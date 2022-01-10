@@ -108,12 +108,12 @@ class NN():
 
 def main():
   X = np.array([[1, 1], [0, 1], [1, 0], [0, 0]])
-  Y = np.array([[0],    [1],    [1],    [0]])
-  nn = NN(eta=0.05, n_iterations=40000, structure=[2, 2, 1])
+  Y = np.array([[1],    [0],    [0],    [0]])
+  nn = NN(eta=0.1, n_iterations=40000, structure=[2, 2, 1])
   nn.fit(X, Y)
   nn.plot()
 
-  print("Vorhersage für [1, 0]:", nn.predict(np.array([1, 0]))[1])
+  print("Vorhersage für [1, 0]:", nn.predict(np.array([1, 1]))[1])
 
 if __name__ == "__main__":
   main()
