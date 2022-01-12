@@ -131,13 +131,20 @@ class NN():
 
 
 def main():
-  X = np.array([[1, 1], [0, 1], [1, 0], [0, 0]])
-  Y = np.array([[1],    [0],    [0],    [0]])
-  nn = NN(eta=0.1, n_iterations=3000, structure=[2, 2, 1], output_activation_func=relu)
+  X = np.array([
+    [0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1],
+    [1, 0, 0], [1, 1, 0], [1, 1, 1]
+  ])
+  Y = np.array([
+    [0], [1], [2], [3],
+    [4], [6], [7]
+  ])
+  nn = NN(eta=0.1, n_iterations=3000, structure=[3, 1], output_activation_func=relu)
   nn.fit(X, Y)
   nn.plot()
+  nn.dump()
 
-  print("Vorhersage für [1, 1]:", nn.predict(np.array([1, 1]))[1])
+  print("Vorhersage für [1, 0, 1]:", nn.predict(np.array([1, 0, 1]))[1])
 
 if __name__ == "__main__":
   main()
