@@ -2,16 +2,33 @@ import numpy as np
 from sklearn.utils.validation import check_random_state
 import matplotlib.pyplot as plt
 
-def sigmoid(x):
+def sigmoid(x, derivative=False):
+  if derivative:
+    return x * (1 - x);
   return 1 / (1 + np.exp(-x))
 
+def relu(x, derivative=False):
+  if derivative:
+    return np.heaviside(x, 1)
+  return np.maximum(x, 0)
+
 class NN():
-  def __init__(self, structure=[3, 3, 3], eta=0.01, n_iterations=1000, random_seed=42):
+  def __init__(
+      self,
+      structure=[3, 3, 3],
+      eta=0.01,
+      n_iterations=1000,
+      random_seed=42,
+      output_activation_func=sigmoid,
+      hidden_activation_func=sigmoid
+    ):
     self.structure = structure
     self.eta = eta
     self.n_iterations = n_iterations
     self.random_seed = random_seed
     self.errors = []
+    self.output_activation_func = output_activation_func
+    self.hidden_activation_func = hidden_activation_func
     self.__initLayers()
     self.__initWeights()
 
@@ -33,7 +50,14 @@ class NN():
     self.layers[0] = x
 
     for k in range(1, len(self.layers)):
-      self.layers[k] = sigmoid(np.dot(self.W[k - 1], self.layers[k - 1]))
+      weighted_sum = np.dot(self.W[k - 1], self.layers[k - 1])
+
+      if k == len(self.layers) - 1:
+        # Output layer
+        self.layers[k] = self.output_activation_func(weighted_sum)
+      else:
+        # Hidden layer
+        self.layers[k] = self.hidden_activation_func(weighted_sum)
 
     return self.layers[-1]
 
@@ -61,12 +85,12 @@ class NN():
           if l == len(D) - 1:
             # Output layer
             a_o = self.layers[-1]
-            D[l] = diff * a_o * (1 - a_o)
+            D[l] = diff * self.output_activation_func(a_o, derivative=True)
           else:
             # Hidden layers
             k = l + 1
             a_k = self.layers[k]
-            D[l] = a_k * (1 - a_k) * np.dot(self.W[k].T, D[k])
+            D[l] = self.hidden_activation_func(a_k, derivative=True) * np.dot(self.W[k].T, D[k])
 
         # Calculate the weight deltas and apply them to the weights
         for i in range(len(delta_W)):
@@ -109,11 +133,11 @@ class NN():
 def main():
   X = np.array([[1, 1], [0, 1], [1, 0], [0, 0]])
   Y = np.array([[1],    [0],    [0],    [0]])
-  nn = NN(eta=0.1, n_iterations=40000, structure=[2, 2, 1])
+  nn = NN(eta=0.1, n_iterations=3000, structure=[2, 2, 1], output_activation_func=relu)
   nn.fit(X, Y)
   nn.plot()
 
-  print("Vorhersage für [1, 0]:", nn.predict(np.array([1, 1]))[1])
+  print("Vorhersage für [1, 1]:", nn.predict(np.array([1, 1]))[1])
 
 if __name__ == "__main__":
   main()
